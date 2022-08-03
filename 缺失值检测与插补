@@ -1,0 +1,75 @@
+def lack_recognize():
+
+    # 指明数据所在路径，为后续pandas对象做准备
+    fpath = r"C:\Users\123\Desktop\math-data\summer-trainning\mission-1\data\catering_sale.xls"
+
+    #读取文件作为pandas对象
+    sheet = pandas.read_excel(fpath,sheet_name=0) #读取第一个工作表sheet
+
+    # 判断每列对应的缺失值数量
+    print('数据中存在缺失值数量如下[单位：个]：')
+    print(sheet.isnull().sum()) #统计工作表中单元格为空的值的数量 并输出
+    print('------')#分割，方便阅读。
+
+    a = sheet['销量'].mean() #计算整体均值
+
+    #均值插补
+    print(f'对缺失值进行均值{a}插补：')
+    sheet[sheet.isnull().any(axis=1)] = sheet['销量'].mean() #令数据中的空值全部用整体均值填补。
+
+    print(sheet.isnull().sum())#再次检测数据中的缺失值。
+    print('------')
+
+#异常值检测与修正
+def mistake_recognize():
+    '''使用箱型图方法进行异常值观察'''
+    fpath = r"C:\Users\123\Desktop\math-data\summer-trainning\mission-1\data\catering_sale.xls"
+
+    # 读取文件作为pandas对象
+    sheet = pandas.read_excel(fpath)
+    a = pandas.DataFrame()
+    data = sheet['销量']
+    score = sheet['日期']
+    a['data'] = data
+    a['score'] = score
+
+    # 箱型图
+    fig = plt.figure(figsize=(10, 6))
+    ax1 = fig.add_subplot(2, 1, 1)
+    color = dict(boxes='DarkGreen', whiskers='DarkOrange', medians='DarkBlue', caps='Gray')
+    a.plot.box(vert=False, grid=True, color=color, ax=ax1, label='样本数据')
+
+    #描述性统计量
+    s = a.describe()
+    print(s)
+    print('------')
+
+    q1 = s.loc['25%','data']
+    q3 = s.loc['75%','data']
+    iqr = q3 - q1
+    mi = q1 - 1.5*iqr
+    ma = q3 + 1.5*iqr
+    print('分位差为：%.3f，下限为：%.3f，上限为：%.3f' % (iqr,mi,ma))
+    print('------')
+
+    # 计算分位差
+
+    ax2 = fig.add_subplot(2, 1, 2)
+    error = data[(data < mi) | (data > ma)]#大于上限或者小于下限的值定义为异常值
+    data_c = data[(data >= mi) & (data <= ma)]
+    print('异常值如下：')
+    print(error)
+    print('异常值共%i条' % len(error))
+    print('------')
+
+    #异常值修正
+    average = sheet['销量'].mean()
+    print(f'异常值剔除后,用均值{average}填补,填补后异常值检测结果如下：')
+    data[(data < mi) | (data > ma)] = sheet['销量'].mean()
+    error1 = data[(data < mi) | (data > ma)]
+    print(f'异常值检测结果为：{len(error1)}个')
+    # 筛选出异常值error、剔除异常值之后的数据data_c
+
+    plt.scatter(data_c.index, data_c, marker='.', alpha=0.3)
+    plt.scatter(error.index, error, color='r', marker='.', alpha=0.5)
+    plt.show()
