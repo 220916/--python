@@ -1,3 +1,4 @@
+```python
 def lack_recognize():
 
     # 指明数据所在路径，为后续pandas对象做准备
@@ -73,3 +74,4 @@ def mistake_recognize():
     plt.scatter(data_c.index, data_c, marker='.', alpha=0.3)
     plt.scatter(error.index, error, color='r', marker='.', alpha=0.5)
     plt.show()
+    ```
